@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Vision AI - Interactive Demo</title>
+    <title>Secure Vision AI - Fraud Detection</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -28,9 +27,9 @@
             border-bottom: 4px solid #2E86AB;
             margin-bottom: 30px;
         }
-        .header h1 { font-size: 42px; color: #2E86AB; font-weight: 700; letter-spacing: 2px; }
+        .header h1 { font-size: 42px; color: #2E86AB; font-weight: 700; }
         .header .subtitle { font-size: 18px; color: #34495e; margin-top: 5px; }
-        .header .badge {
+        .badge {
             display: inline-block;
             background: #2E86AB;
             color: white;
@@ -53,7 +52,7 @@
             border-left: 4px solid #2E86AB;
             transition: transform 0.3s ease;
         }
-        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+        .metric-card:hover { transform: translateY(-5px); }
         .metric-card .number { font-size: 32px; font-weight: 700; color: #2E86AB; }
         .metric-card .label { font-size: 14px; color: #7f8c8d; margin-top: 5px; }
         .metric-card .trend { font-size: 12px; color: #27ae60; margin-top: 5px; }
@@ -77,32 +76,21 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border: 1px solid #e9ecef;
             transition: transform 0.3s ease;
         }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-        .card h3 { color: #2c3e50; margin-bottom: 15px; font-size: 16px; font-weight: 600; }
-        .prediction-card { padding: 20px; border-radius: 12px; text-align: center; transition: transform 0.3s ease; }
-        .prediction-card:hover { transform: translateY(-5px); }
-        .prediction-low { background: #d4edda; border: 2px solid #27ae60; }
-        .prediction-medium { background: #fff3cd; border: 2px solid #f39c12; }
-        .prediction-high { background: #f8d7da; border: 2px solid #e74c3c; }
+        .card:hover { transform: translateY(-3px); }
+        .prediction-low { background: #d4edda; border: 2px solid #27ae60; padding: 20px; border-radius: 12px; text-align: center; }
+        .prediction-medium { background: #fff3cd; border: 2px solid #f39c12; padding: 20px; border-radius: 12px; text-align: center; }
+        .prediction-high { background: #f8d7da; border: 2px solid #e74c3c; padding: 20px; border-radius: 12px; text-align: center; }
         .input-group { margin-bottom: 15px; }
-        .input-group label {
-            display: block;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
+        .input-group label { display: block; font-weight: 600; color: #2c3e50; margin-bottom: 5px; font-size: 14px; }
         .input-group input, .input-group select {
             width: 100%;
             padding: 10px;
             border: 2px solid #e9ecef;
             border-radius: 8px;
             font-size: 14px;
-            transition: border-color 0.3s ease;
         }
         .input-group input:focus, .input-group select:focus {
             outline: none;
@@ -126,14 +114,9 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(46, 134, 171, 0.4);
         }
-        .risk-low { background: #d4edda; padding: 15px; border-radius: 8px; color: #155724; font-weight: 600; text-align: center; border-left: 4px solid #27ae60; }
-        .risk-medium { background: #fff3cd; padding: 15px; border-radius: 8px; color: #856404; font-weight: 600; text-align: center; border-left: 4px solid #f39c12; }
-        .risk-high { background: #f8d7da; padding: 15px; border-radius: 8px; color: #721c24; font-weight: 600; text-align: center; border-left: 4px solid #e74c3c; }
         .progress-bar { width: 100%; height: 10px; background: #e9ecef; border-radius: 5px; margin: 8px 0; overflow: hidden; }
         .progress-bar .fill { height: 100%; border-radius: 5px; transition: width 0.8s ease; }
         .status-success { color: #27ae60; font-weight: 600; }
-        .status-danger { color: #e74c3c; font-weight: 600; }
-        .status-warning { color: #f39c12; font-weight: 600; }
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         table th { background: #2E86AB; color: white; padding: 12px; text-align: left; }
@@ -158,13 +141,10 @@
             color: #7f8c8d;
             font-size: 12px;
         }
-        .chart-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 15px 0; }
+        .chart-container { background: white; padding: 20px; border-radius: 12px; margin: 15px 0; }
         .chart-container canvas { max-height: 250px; }
         .result-box { padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center; display: none; }
         .result-box.show { display: block; animation: fadeIn 0.6s ease; }
-        .result-box .icon { font-size: 64px; }
-        .result-box .title { font-size: 24px; font-weight: 700; margin: 10px 0; }
-        .result-box .detail { font-size: 16px; color: #7f8c8d; }
     </style>
 </head>
 <body>
@@ -252,7 +232,7 @@
                 <div>
                     <div id="resultContainer">
                         <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                            <div style="font-size: 64px;">&#128640;</div>
+                            <div style="font-size: 64px;">🚀</div>
                             <p style="font-size: 18px; margin-top: 10px;">Enter transaction details and click "Predict"</p>
                             <p style="font-size: 14px;">The system will analyze the transaction using our ensemble model</p>
                         </div>
@@ -289,21 +269,21 @@
             <div class="grid-3">
                 <div class="card" style="text-align: center; border-top: 4px solid #2E86AB;">
                     <h3>Factor 1</h3>
-                    <p style="font-size: 48px; margin: 10px 0;">&#9679;&#9679;&#9679;&#9679;</p>
+                    <p style="font-size: 48px; margin: 10px 0;">●●●●</p>
                     <p><strong>Knowledge</strong></p>
                     <p style="font-size: 14px; color: #7f8c8d;">4-digit PIN</p>
                     <span class="status-success">Verified</span>
                 </div>
                 <div class="card" style="text-align: center; border-top: 4px solid #F5A623;">
                     <h3>Factor 2</h3>
-                    <p style="font-size: 48px; margin: 10px 0;">&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;</p>
+                    <p style="font-size: 48px; margin: 10px 0;">●●●●●●</p>
                     <p><strong>Possession</strong></p>
                     <p style="font-size: 14px; color: #7f8c8d;">6-digit OTP</p>
                     <span class="status-success">Verified</span>
                 </div>
                 <div class="card" style="text-align: center; border-top: 4px solid #27ae60;">
                     <h3>Factor 3</h3>
-                    <p style="font-size: 48px; margin: 10px 0;">&#128070;</p>
+                    <p style="font-size: 48px; margin: 10px 0;">👆</p>
                     <p><strong>Inherence</strong></p>
                     <p style="font-size: 14px; color: #7f8c8d;">Biometric Data</p>
                     <span class="status-success">Verified</span>
@@ -311,8 +291,8 @@
             </div>
             <div style="text-align: center; padding: 20px; background: #d4edda; border-radius: 12px; margin-top: 20px;">
                 <h3 style="color: #27ae60;">AUTHENTICATION SUCCESSFUL!</h3>
-                <p>All three factors verified  Transaction Approved</p>
-                <p style="font-size: 14px; color: #7f8c8d;">Security Level: 95%  99% reduction in unauthorized access</p>
+                <p>All three factors verified - Transaction Approved</p>
+                <p style="font-size: 14px; color: #7f8c8d;">Security Level: 95% - 99% reduction in unauthorized access</p>
             </div>
         </div>
         
@@ -338,9 +318,8 @@
         </div>
         
         <div class="footer">
-            <p>Secure Vision AI  Building Trust in Digital Finance</p>
-            <p>QBS 3MTT NEXTGEN  July 11, 2026</p>
-            <p style="margin-top: 10px; opacity: 0.5;">Interactive Demo  Board Ready</p>
+            <p>Secure Vision AI - Building Trust in Digital Finance</p>
+            <p>QBS 3MTT NEXTGEN - July 11, 2026</p>
         </div>
     </div>
     
@@ -380,19 +359,19 @@
             if (ensembleScore < 0.3) {
                 riskLevel = 'LOW';
                 riskClass = 'prediction-low';
-                riskEmoji = '&#9989;';
+                riskEmoji = '✅';
                 recommendation = 'Transaction Approved';
                 color = '#27ae60';
             } else if (ensembleScore < 0.6) {
                 riskLevel = 'MEDIUM';
                 riskClass = 'prediction-medium';
-                riskEmoji = '&#9888;';
+                riskEmoji = '⚠️';
                 recommendation = 'Additional Verification Required';
                 color = '#f39c12';
             } else {
                 riskLevel = 'HIGH';
                 riskClass = 'prediction-high';
-                riskEmoji = '&#128680;';
+                riskEmoji = '🚨';
                 recommendation = 'Transaction Blocked';
                 color = '#e74c3c';
             }
@@ -433,7 +412,7 @@
                     <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px;">
                         <p style="font-weight: 600; margin: 0;">Recommendation</p>
                         <p style="font-size: 14px; margin-top: 5px;">
-                            ${recommendation}.
+                            ${recommendation}. 
                             ${riskLevel === 'LOW' ? 'This transaction appears legitimate and can be processed normally.' : 
                               riskLevel === 'MEDIUM' ? 'The transaction has suspicious patterns. Additional verification is recommended.' : 
                               'The transaction is highly suspicious. Immediate blocking is recommended.'}
@@ -462,7 +441,7 @@
         });
         
         setTimeout(predictFraud, 500);
-        console.log('Secure Vision AI Interactive Demo Loaded!');
+        console.log('Secure Vision AI Demo Loaded!');
     </script>
 </body>
 </html>
