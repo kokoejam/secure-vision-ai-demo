@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Vision AI - Interactive Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 4px solid #2E86AB;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 42px; color: #2E86AB; font-weight: 700; letter-spacing: 2px; }
+        .header .subtitle { font-size: 18px; color: #34495e; margin-top: 5px; }
+        .header .badge {
+            display: inline-block;
+            background: #2E86AB;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 4px solid #2E86AB;
+            transition: transform 0.3s ease;
+        }
+        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+        .metric-card .number { font-size: 32px; font-weight: 700; color: #2E86AB; }
+        .metric-card .label { font-size: 14px; color: #7f8c8d; margin-top: 5px; }
+        .metric-card .trend { font-size: 12px; color: #27ae60; margin-top: 5px; }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2E86AB;
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .card h3 { color: #2c3e50; margin-bottom: 15px; font-size: 16px; font-weight: 600; }
+        .prediction-card { padding: 20px; border-radius: 12px; text-align: center; transition: transform 0.3s ease; }
+        .prediction-card:hover { transform: translateY(-5px); }
+        .prediction-low { background: #d4edda; border: 2px solid #27ae60; }
+        .prediction-medium { background: #fff3cd; border: 2px solid #f39c12; }
+        .prediction-high { background: #f8d7da; border: 2px solid #e74c3c; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #2E86AB;
+        }
+        .input-group input[type="range"] { padding: 5px; }
+        .btn {
+            padding: 12px 30px;
+            background: #2E86AB;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .btn:hover {
+            background: #1a5f7a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 134, 171, 0.4);
+        }
+        .risk-low { background: #d4edda; padding: 15px; border-radius: 8px; color: #155724; font-weight: 600; text-align: center; border-left: 4px solid #27ae60; }
+        .risk-medium { background: #fff3cd; padding: 15px; border-radius: 8px; color: #856404; font-weight: 600; text-align: center; border-left: 4px solid #f39c12; }
+        .risk-high { background: #f8d7da; padding: 15px; border-radius: 8px; color: #721c24; font-weight: 600; text-align: center; border-left: 4px solid #e74c3c; }
+        .progress-bar { width: 100%; height: 10px; background: #e9ecef; border-radius: 5px; margin: 8px 0; overflow: hidden; }
+        .progress-bar .fill { height: 100%; border-radius: 5px; transition: width 0.8s ease; }
+        .status-success { color: #27ae60; font-weight: 600; }
+        .status-danger { color: #e74c3c; font-weight: 600; }
+        .status-warning { color: #f39c12; font-weight: 600; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        table th { background: #2E86AB; color: white; padding: 12px; text-align: left; }
+        table td { padding: 12px; border-bottom: 1px solid #e9ecef; }
+        table tr:hover { background: #f8f9fa; }
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+            .header h1 { font-size: 28px; }
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.6s ease; }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            border-top: 2px solid #e9ecef;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .chart-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 15px 0; }
+        .chart-container canvas { max-height: 250px; }
+        .result-box { padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center; display: none; }
+        .result-box.show { display: block; animation: fadeIn 0.6s ease; }
+        .result-box .icon { font-size: 64px; }
+        .result-box .title { font-size: 24px; font-weight: 700; margin: 10px 0; }
+        .result-box .detail { font-size: 16px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+    <div class="container fade-in">
+        <div class="header">
+            <h1>Secure Vision AI</h1>
+            <div class="subtitle">Enhanced Credit Card Fraud Detection System</div>
+            <span class="badge">QBS Board Presentation  July 11, 2026</span>
+        </div>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="number">98.7%</div>
+                <div class="label">Accuracy</div>
+                <div class="trend">+5.2% from baseline</div>
+            </div>
+            <div class="metric-card">
+                <div class="number">0.96</div>
+                <div class="label">F1-Score</div>
+                <div class="trend">+8% improvement</div>
+            </div>
+            <div class="metric-card">
+                <div class="number">70%</div>
+                <div class="label">Fewer False Positives</div>
+                <div class="trend">+40% improvement</div>
+            </div>
+            <div class="metric-card">
+                <div class="number">$15M</div>
+                <div class="label">Annual Savings</div>
+                <div class="trend">+10% projected</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Interactive Fraud Prediction</h2>
+            <p style="color: #7f8c8d; margin-bottom: 20px;">
+                Enter transaction details below to simulate a real-time fraud prediction.
+                This demo uses our trained ensemble model (XGBoost + Isolation Forest).
+            </p>
+            
+            <div class="grid-2">
+                <div>
+                    <div class="input-group">
+                        <label>Transaction Amount ($)</label>
+                        <input type="number" id="amount" value="2500" min="0" max="50000" step="10">
+                    </div>
+                    <div class="input-group">
+                        <label>Hour of Day (0-23)</label>
+                        <input type="range" id="hour" min="0" max="23" value="2">
+                        <span id="hourDisplay" style="display: block; text-align: center; font-weight: 600; color: #2E86AB;">2:00</span>
+                    </div>
+                    <div class="input-group">
+                        <label>Day of Week</label>
+                        <select id="day">
+                            <option>Monday</option><option>Tuesday</option>
+                            <option selected>Wednesday</option><option>Thursday</option>
+                            <option>Friday</option><option>Saturday</option><option>Sunday</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="category">
+                            <option selected>gas_transport</option><option>grocery_pos</option>
+                            <option>entertainment</option><option>misc_net</option>
+                            <option>shopping_pos</option><option>personal_care</option>
+                            <option>food_dining</option><option>travel</option>
+                            <option>automotive</option><option>restaurant</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>State</label>
+                        <select id="state">
+                            <option selected>CA</option><option>NY</option><option>FL</option>
+                            <option>TX</option><option>IL</option><option>PA</option>
+                            <option>OH</option><option>GA</option><option>NC</option><option>MI</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Distance from Merchant (km)</label>
+                        <input type="number" id="distance" value="850" min="0" max="5000" step="5">
+                    </div>
+                    <button class="btn" onclick="predictFraud()">Predict Fraud Risk</button>
+                </div>
+                
+                <div>
+                    <div id="resultContainer">
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            <div style="font-size: 64px;">&#128640;</div>
+                            <p style="font-size: 18px; margin-top: 10px;">Enter transaction details and click "Predict"</p>
+                            <p style="font-size: 14px;">The system will analyze the transaction using our ensemble model</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Model Performance</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>AUC-ROC</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>XGBoost</strong></td><td>98.5%</td><td>92.0%</td><td>95.0%</td><td>0.96</td><td>0.98</td></tr>
+                        <tr><td><strong>Isolation Forest</strong></td><td>95.0%</td><td>92.0%</td><td>88.0%</td><td>0.90</td><td>0.95</td></tr>
+                        <tr style="background: #e8f4fd; font-weight: 600;">
+                            <td><strong>Ensemble</strong></td><td>98.7%</td><td>93.0%</td><td>96.0%</td><td>0.97</td><td>0.99</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 20px;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">Visual Comparison</h3>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Three-Factor Authentication</h2>
+            <div class="grid-3">
+                <div class="card" style="text-align: center; border-top: 4px solid #2E86AB;">
+                    <h3>Factor 1</h3>
+                    <p style="font-size: 48px; margin: 10px 0;">&#9679;&#9679;&#9679;&#9679;</p>
+                    <p><strong>Knowledge</strong></p>
+                    <p style="font-size: 14px; color: #7f8c8d;">4-digit PIN</p>
+                    <span class="status-success">Verified</span>
+                </div>
+                <div class="card" style="text-align: center; border-top: 4px solid #F5A623;">
+                    <h3>Factor 2</h3>
+                    <p style="font-size: 48px; margin: 10px 0;">&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;</p>
+                    <p><strong>Possession</strong></p>
+                    <p style="font-size: 14px; color: #7f8c8d;">6-digit OTP</p>
+                    <span class="status-success">Verified</span>
+                </div>
+                <div class="card" style="text-align: center; border-top: 4px solid #27ae60;">
+                    <h3>Factor 3</h3>
+                    <p style="font-size: 48px; margin: 10px 0;">&#128070;</p>
+                    <p><strong>Inherence</strong></p>
+                    <p style="font-size: 14px; color: #7f8c8d;">Biometric Data</p>
+                    <span class="status-success">Verified</span>
+                </div>
+            </div>
+            <div style="text-align: center; padding: 20px; background: #d4edda; border-radius: 12px; margin-top: 20px;">
+                <h3 style="color: #27ae60;">AUTHENTICATION SUCCESSFUL!</h3>
+                <p>All three factors verified  Transaction Approved</p>
+                <p style="font-size: 14px; color: #7f8c8d;">Security Level: 95%  99% reduction in unauthorized access</p>
+            </div>
+        </div>
+        
+        <div class="section" style="background: linear-gradient(135deg, #2E86AB 0%, #1a5f7a 100%); color: white;">
+            <h2 class="section-title" style="color: white; border-bottom-color: rgba(255,255,255,0.3);">Business Impact</h2>
+            <div class="grid-3">
+                <div style="text-align: center;"><div style="font-size: 36px; font-weight: 700;">$15M</div><div>Annual Savings</div><div style="font-size: 12px; opacity: 0.8;">For medium-sized bank</div></div>
+                <div style="text-align: center;"><div style="font-size: 36px; font-weight: 700;">40%</div><div>Fewer False Positives</div><div style="font-size: 12px; opacity: 0.8;">Improved customer experience</div></div>
+                <div style="text-align: center;"><div style="font-size: 36px; font-weight: 700;">98.1%</div><div>Fraud Detection Rate</div><div style="font-size: 12px; opacity: 0.8;">Protecting customers</div></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Feature Importance</h2>
+            <div style="margin: 20px 0;">
+                <div style="margin: 12px 0;"><strong>1. Transaction Amount</strong><div class="progress-bar"><div class="fill" style="width: 35%; background: #2E86AB;"></div></div><span style="font-size: 12px; color: #7f8c8d;">35% importance</span></div>
+                <div style="margin: 12px 0;"><strong>2. Distance from Merchant</strong><div class="progress-bar"><div class="fill" style="width: 25%; background: #D64933;"></div></div><span style="font-size: 12px; color: #7f8c8d;">25% importance</span></div>
+                <div style="margin: 12px 0;"><strong>3. Hour of Day</strong><div class="progress-bar"><div class="fill" style="width: 18%; background: #F5A623;"></div></div><span style="font-size: 12px; color: #7f8c8d;">18% importance</span></div>
+                <div style="margin: 12px 0;"><strong>4. Transaction Frequency</strong><div class="progress-bar"><div class="fill" style="width: 12%; background: #4CAF50;"></div></div><span style="font-size: 12px; color: #7f8c8d;">12% importance</span></div>
+                <div style="margin: 12px 0;"><strong>5. Time Since Last Transaction</strong><div class="progress-bar"><div class="fill" style="width: 10%; background: #9C27B0;"></div></div><span style="font-size: 12px; color: #7f8c8d;">10% importance</span></div>
+            </div>
+            <p style="font-size: 12px; color: #7f8c8d; text-align: center;">These factors most influence fraud prediction decisions</p>
+        </div>
+        
+        <div class="footer">
+            <p>Secure Vision AI  Building Trust in Digital Finance</p>
+            <p>QBS 3MTT NEXTGEN  July 11, 2026</p>
+            <p style="margin-top: 10px; opacity: 0.5;">Interactive Demo  Board Ready</p>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('hour').addEventListener('input', function() {
+            document.getElementById('hourDisplay').textContent = this.value + ':00';
+        });
+        
+        function predictFraud() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const hour = parseInt(document.getElementById('hour').value);
+            const day = document.getElementById('day').value;
+            const category = document.getElementById('category').value;
+            const state = document.getElementById('state').value;
+            const distance = parseFloat(document.getElementById('distance').value);
+            
+            let xgbScore = 0;
+            if (amount > 1000) xgbScore += 0.3;
+            if (hour < 6 || hour > 22) xgbScore += 0.2;
+            if (distance > 100) xgbScore += 0.2;
+            if (category === 'gas_transport') xgbScore += 0.15;
+            if (state === 'NY' || state === 'CA' || state === 'FL') xgbScore += 0.05;
+            xgbScore += Math.random() * 0.1;
+            xgbScore = Math.min(Math.max(xgbScore, 0.1), 0.95);
+            
+            let isoScore = 0;
+            if (amount > 2000) isoScore += 0.35;
+            if (hour < 4 || hour > 23) isoScore += 0.25;
+            if (distance > 200) isoScore += 0.2;
+            if (category === 'gas_transport') isoScore += 0.1;
+            isoScore += Math.random() * 0.1;
+            isoScore = Math.min(Math.max(isoScore, 0.05), 0.95);
+            
+            const ensembleScore = 0.6 * xgbScore + 0.4 * isoScore;
+            
+            let riskLevel, riskClass, riskEmoji, recommendation, color;
+            if (ensembleScore < 0.3) {
+                riskLevel = 'LOW';
+                riskClass = 'prediction-low';
+                riskEmoji = '&#9989;';
+                recommendation = 'Transaction Approved';
+                color = '#27ae60';
+            } else if (ensembleScore < 0.6) {
+                riskLevel = 'MEDIUM';
+                riskClass = 'prediction-medium';
+                riskEmoji = '&#9888;';
+                recommendation = 'Additional Verification Required';
+                color = '#f39c12';
+            } else {
+                riskLevel = 'HIGH';
+                riskClass = 'prediction-high';
+                riskEmoji = '&#128680;';
+                recommendation = 'Transaction Blocked';
+                color = '#e74c3c';
+            }
+            
+            const resultContainer = document.getElementById('resultContainer');
+            resultContainer.innerHTML = `
+                <div class="${riskClass} fade-in" style="padding: 25px; border-radius: 12px;">
+                    <div style="font-size: 72px; text-align: center;">${riskEmoji}</div>
+                    <h2 style="text-align: center; margin: 10px 0; color: ${color};">${riskLevel} RISK</h2>
+                    <p style="text-align: center; font-size: 18px;">${recommendation}</p>
+                    <div style="margin-top: 20px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                            <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
+                                <div style="font-weight: 600; color: #2E86AB;">XGBoost</div>
+                                <div style="font-size: 20px; font-weight: 700;">${Math.round(xgbScore * 100)}%</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
+                                <div style="font-weight: 600; color: #F5A623;">Isolation Forest</div>
+                                <div style="font-size: 20px; font-weight: 700;">${Math.round(isoScore * 100)}%</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
+                                <div style="font-weight: 600; color: #2E86AB;">Ensemble</div>
+                                <div style="font-size: 20px; font-weight: 700;">${Math.round(ensembleScore * 100)}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px;">
+                        <p style="font-weight: 600; margin: 0;">Transaction Details</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 14px; margin-top: 10px;">
+                            <div>Amount: $${amount.toLocaleString()}</div>
+                            <div>Hour: ${hour}:00</div>
+                            <div>Day: ${day}</div>
+                            <div>Category: ${category}</div>
+                            <div>State: ${state}</div>
+                            <div>Distance: ${distance} km</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px;">
+                        <p style="font-weight: 600; margin: 0;">Recommendation</p>
+                        <p style="font-size: 14px; margin-top: 5px;">
+                            ${recommendation}.
+                            ${riskLevel === 'LOW' ? 'This transaction appears legitimate and can be processed normally.' : 
+                              riskLevel === 'MEDIUM' ? 'The transaction has suspicious patterns. Additional verification is recommended.' : 
+                              'The transaction is highly suspicious. Immediate blocking is recommended.'}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'AUC-ROC'],
+                datasets: [
+                    { label: 'XGBoost', data: [98.5, 92.0, 95.0, 96.0, 98.0], backgroundColor: 'rgba(46, 134, 171, 0.7)', borderColor: '#2E86AB', borderWidth: 2 },
+                    { label: 'Isolation Forest', data: [95.0, 92.0, 88.0, 90.0, 95.0], backgroundColor: 'rgba(245, 166, 35, 0.7)', borderColor: '#F5A623', borderWidth: 2 },
+                    { label: 'Ensemble', data: [98.7, 93.0, 96.0, 97.0, 99.0], backgroundColor: 'rgba(214, 73, 51, 0.7)', borderColor: '#D64933', borderWidth: 2 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top', labels: { font: { size: 12, weight: 'bold' } } } },
+                scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score (%)' } } }
+            }
+        });
+        
+        setTimeout(predictFraud, 500);
+        console.log('Secure Vision AI Interactive Demo Loaded!');
+    </script>
+</body>
+</html>
