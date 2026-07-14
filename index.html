@@ -3,445 +3,500 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Vision AI - Fraud Detection</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Secure Vision AI — Fraud Prevention Terminal</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-        }
-        .header {
-            text-align: center;
-            padding: 20px 0;
-            border-bottom: 4px solid #2E86AB;
-            margin-bottom: 30px;
-        }
-        .header h1 { font-size: 42px; color: #2E86AB; font-weight: 700; }
-        .header .subtitle { font-size: 18px; color: #34495e; margin-top: 5px; }
-        .badge {
-            display: inline-block;
-            background: #2E86AB;
-            color: white;
-            padding: 5px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .metric-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            border-left: 4px solid #2E86AB;
-            transition: transform 0.3s ease;
-        }
-        .metric-card:hover { transform: translateY(-5px); }
-        .metric-card .number { font-size: 32px; font-weight: 700; color: #2E86AB; }
-        .metric-card .label { font-size: 14px; color: #7f8c8d; margin-top: 5px; }
-        .metric-card .trend { font-size: 12px; color: #27ae60; margin-top: 5px; }
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 15px;
-        }
-        .section-title {
-            font-size: 22px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #2E86AB;
-        }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
-            transition: transform 0.3s ease;
-        }
-        .card:hover { transform: translateY(-3px); }
-        .prediction-low { background: #d4edda; border: 2px solid #27ae60; padding: 20px; border-radius: 12px; text-align: center; }
-        .prediction-medium { background: #fff3cd; border: 2px solid #f39c12; padding: 20px; border-radius: 12px; text-align: center; }
-        .prediction-high { background: #f8d7da; border: 2px solid #e74c3c; padding: 20px; border-radius: 12px; text-align: center; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-weight: 600; color: #2c3e50; margin-bottom: 5px; font-size: 14px; }
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .input-group input:focus, .input-group select:focus {
-            outline: none;
-            border-color: #2E86AB;
-        }
-        .input-group input[type="range"] { padding: 5px; }
-        .btn {
-            padding: 12px 30px;
-            background: #2E86AB;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-        .btn:hover {
-            background: #1a5f7a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(46, 134, 171, 0.4);
-        }
-        .progress-bar { width: 100%; height: 10px; background: #e9ecef; border-radius: 5px; margin: 8px 0; overflow: hidden; }
-        .progress-bar .fill { height: 100%; border-radius: 5px; transition: width 0.8s ease; }
-        .status-success { color: #27ae60; font-weight: 600; }
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        table th { background: #2E86AB; color: white; padding: 12px; text-align: left; }
-        table td { padding: 12px; border-bottom: 1px solid #e9ecef; }
-        table tr:hover { background: #f8f9fa; }
-        @media (max-width: 768px) {
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-            .container { padding: 15px; }
-            .header h1 { font-size: 28px; }
-            .metrics-grid { grid-template-columns: 1fr 1fr; }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in { animation: fadeIn 0.6s ease; }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 30px;
-            border-top: 2px solid #e9ecef;
-            color: #7f8c8d;
-            font-size: 12px;
-        }
-        .chart-container { background: white; padding: 20px; border-radius: 12px; margin: 15px 0; }
-        .chart-container canvas { max-height: 250px; }
-        .result-box { padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center; display: none; }
-        .result-box.show { display: block; animation: fadeIn 0.6s ease; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+        .container { max-width: 960px; margin: auto; padding: 10px; }
+        h1, h2, h3 { color: #ffffff; margin-top: 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+
+        /* Stepper */
+        .stepper { display:flex; gap:8px; margin-bottom:20px; }
+        .step { flex:1; text-align:center; padding:10px 6px; border-radius:6px; background:#1e1e1e; border:1px solid #2d2d2d; font-size:0.78rem; font-weight:bold; color:#666; }
+        .step.active { background:#1b263b; border-color:#415a77; color:#8da9c4; }
+        .step.done { background:#14301f; border-color:#2e7d32; color:#66bb6a; }
+
+        /* 3FA PORTAL */
+        #login-layer { background: #0d1b2a; border: 1px solid #1b263b; box-shadow: 0 4px 20px rgba(13, 27, 42, 0.6); }
+        #login-layer h1, #login-layer h2, #login-layer h3 { color: #e0e1dd; }
+        .blue-inner-card { background: #1b263b; padding: 15px; border-radius: 6px; border: 1px solid #415a77; }
+        .btn-blue { background: #415a77; color: white; border: none; padding: 12px 20px; font-size: 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-blue:hover { background: #778da9; }
+        .btn-blue:disabled { background:#2d3a4a; color:#6b7a8d; cursor:not-allowed; }
+        .factor-status { font-size:0.85rem; margin-top:6px; font-weight:bold; }
+        .factor-pending { color:#8da9c4; }
+        .factor-ok { color:#66bb6a; }
+        .factor-fail { color:#ff6b6b; }
+
+        /* Card auth layer */
+        #cardauth-layer { background:#1e1e1e; border:1px solid #2d2d2d; }
+        .scan-box { border:2px dashed #444; border-radius:8px; padding:30px; text-align:center; margin-bottom:15px; background:#181818; }
+        .scan-box.scanning { border-color:#ffb300; }
+        .scan-box.ok { border-color:#4caf50; }
+        .check-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #2d2d2d; font-size:0.92rem; }
+        .check-row:last-child { border-bottom:none; }
+        .pill { padding:3px 10px; border-radius:20px; font-size:0.78rem; font-weight:bold; }
+        .pill-wait { background:#3a3a3a; color:#aaa; }
+        .pill-ok { background:#1b3d24; color:#66bb6a; }
+        .pill-fail { background:#3d1b1b; color:#ff6b6b; }
+
+        /* GENERAL CONTAINERS & BUTTONS */
+        .card { padding: 25px; border-radius: 8px; margin-bottom: 20px; }
+        #analyzer-layer { background: #1e1e1e; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #2d2d2d; }
+        .inner-card { background: #2d2d2d; padding: 15px; border-radius: 6px; border: 1px solid #3d3d3d; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; color: #b0b0b0; }
+        input, select { width: 100%; padding: 10px; background: #3a3a3a; border: 1px solid #555; border-radius: 4px; color: #fff; box-sizing: border-box; margin-bottom: 15px; }
+
+        button { background: #4caf50; color: white; border: none; padding: 12px 20px; font-size: 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #45a049; }
+        button:disabled { background:#3a3a3a; color:#777; cursor:not-allowed; }
+        .btn-alt { background: #3a3a3a; border: 1px solid #555; color: white; }
+        .btn-alt:hover { background: #4a4a4a; }
+        .btn-danger { background: #f44336; }
+        .btn-danger:hover { background: #da190b; }
+        .btn-freeze { background:#1976d2; }
+        .btn-freeze:hover { background:#1565c0; }
+        .btn-unfreeze { background:#546e7a; }
+
+        .hidden { display: none !important; }
+        .disabled-link { color: #555 !important; pointer-events: none; text-decoration: line-through; cursor: not-allowed; }
+        #summary-box { padding: 15px; border-radius: 4px; font-weight: bold; font-size: 1.2rem; margin-top: 15px; background: #252525; border-left: 4px solid #555; }
+        #contrib-line { font-weight:normal; font-size:0.85rem; color:#9aa0a6; margin-top:8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #444; font-size:0.85rem;}
+        th { background-color: #2d2d2d; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 999; }
+        .modal-content { background: #1e1e1e; padding: 25px; border-radius: 8px; width: 90%; max-width:900px; max-height: 80vh; overflow-y: auto; border: 1px solid #3d3d3d; }
+
+        .banner { padding:12px 16px; border-radius:6px; margin-bottom:15px; font-weight:bold; display:flex; align-items:center; gap:10px; }
+        .banner-frozen { background:#1b263b; border:1px solid #415a77; color:#8da9c4; }
+        .banner-alert { background:#3d1b1b; border:1px solid #f44336; color:#ff8a80; animation: pulse 1.2s infinite; }
+        @keyframes pulse { 0%{opacity:1;} 50%{opacity:0.6;} 100%{opacity:1;} }
+        .disclaimer { font-size:0.75rem; color:#777; margin-top:25px; border-top:1px solid #2d2d2d; padding-top:10px; }
+        .alert-feed { max-height:180px; overflow-y:auto; background:#181818; border-radius:4px; padding:10px; font-size:0.82rem; }
+        .alert-feed div { padding:4px 0; border-bottom:1px solid #2a2a2a; }
     </style>
 </head>
 <body>
-    <div class="container fade-in">
-        <div class="header">
-            <h1>Secure Vision AI</h1>
-            <div class="subtitle">Enhanced Credit Card Fraud Detection System</div>
-            <span class="badge">QBS Board Presentation  July 11, 2026</span>
-        </div>
-        
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="number">98.7%</div>
-                <div class="label">Accuracy</div>
-                <div class="trend">+5.2% from baseline</div>
-            </div>
-            <div class="metric-card">
-                <div class="number">0.96</div>
-                <div class="label">F1-Score</div>
-                <div class="trend">+8% improvement</div>
-            </div>
-            <div class="metric-card">
-                <div class="number">70%</div>
-                <div class="label">Fewer False Positives</div>
-                <div class="trend">+40% improvement</div>
-            </div>
-            <div class="metric-card">
-                <div class="number">$15M</div>
-                <div class="label">Annual Savings</div>
-                <div class="trend">+10% projected</div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2 class="section-title">Interactive Fraud Prediction</h2>
-            <p style="color: #7f8c8d; margin-bottom: 20px;">
-                Enter transaction details below to simulate a real-time fraud prediction.
-                This demo uses our trained ensemble model (XGBoost + Isolation Forest).
-            </p>
-            
-            <div class="grid-2">
-                <div>
-                    <div class="input-group">
-                        <label>Transaction Amount ($)</label>
-                        <input type="number" id="amount" value="2500" min="0" max="50000" step="10">
-                    </div>
-                    <div class="input-group">
-                        <label>Hour of Day (0-23)</label>
-                        <input type="range" id="hour" min="0" max="23" value="2">
-                        <span id="hourDisplay" style="display: block; text-align: center; font-weight: 600; color: #2E86AB;">2:00</span>
-                    </div>
-                    <div class="input-group">
-                        <label>Day of Week</label>
-                        <select id="day">
-                            <option>Monday</option><option>Tuesday</option>
-                            <option selected>Wednesday</option><option>Thursday</option>
-                            <option>Friday</option><option>Saturday</option><option>Sunday</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Category</label>
-                        <select id="category">
-                            <option selected>gas_transport</option><option>grocery_pos</option>
-                            <option>entertainment</option><option>misc_net</option>
-                            <option>shopping_pos</option><option>personal_care</option>
-                            <option>food_dining</option><option>travel</option>
-                            <option>automotive</option><option>restaurant</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>State</label>
-                        <select id="state">
-                            <option selected>CA</option><option>NY</option><option>FL</option>
-                            <option>TX</option><option>IL</option><option>PA</option>
-                            <option>OH</option><option>GA</option><option>NC</option><option>MI</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Distance from Merchant (km)</label>
-                        <input type="number" id="distance" value="850" min="0" max="5000" step="5">
-                    </div>
-                    <button class="btn" onclick="predictFraud()">Predict Fraud Risk</button>
-                </div>
-                
-                <div>
-                    <div id="resultContainer">
-                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                            <div style="font-size: 64px;">🚀</div>
-                            <p style="font-size: 18px; margin-top: 10px;">Enter transaction details and click "Predict"</p>
-                            <p style="font-size: 14px;">The system will analyze the transaction using our ensemble model</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2 class="section-title">Model Performance</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>AUC-ROC</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><strong>XGBoost</strong></td><td>98.5%</td><td>92.0%</td><td>95.0%</td><td>0.96</td><td>0.98</td></tr>
-                        <tr><td><strong>Isolation Forest</strong></td><td>95.0%</td><td>92.0%</td><td>88.0%</td><td>0.90</td><td>0.95</td></tr>
-                        <tr style="background: #e8f4fd; font-weight: 600;">
-                            <td><strong>Ensemble</strong></td><td>98.7%</td><td>93.0%</td><td>96.0%</td><td>0.97</td><td>0.99</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div style="margin-top: 20px;">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">Visual Comparison</h3>
-                <div class="chart-container">
-                    <canvas id="performanceChart"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2 class="section-title">Three-Factor Authentication</h2>
-            <div class="grid-3">
-                <div class="card" style="text-align: center; border-top: 4px solid #2E86AB;">
-                    <h3>Factor 1</h3>
-                    <p style="font-size: 48px; margin: 10px 0;">●●●●</p>
-                    <p><strong>Knowledge</strong></p>
-                    <p style="font-size: 14px; color: #7f8c8d;">4-digit PIN</p>
-                    <span class="status-success">Verified</span>
-                </div>
-                <div class="card" style="text-align: center; border-top: 4px solid #F5A623;">
-                    <h3>Factor 2</h3>
-                    <p style="font-size: 48px; margin: 10px 0;">●●●●●●</p>
-                    <p><strong>Possession</strong></p>
-                    <p style="font-size: 14px; color: #7f8c8d;">6-digit OTP</p>
-                    <span class="status-success">Verified</span>
-                </div>
-                <div class="card" style="text-align: center; border-top: 4px solid #27ae60;">
-                    <h3>Factor 3</h3>
-                    <p style="font-size: 48px; margin: 10px 0;">👆</p>
-                    <p><strong>Inherence</strong></p>
-                    <p style="font-size: 14px; color: #7f8c8d;">Biometric Data</p>
-                    <span class="status-success">Verified</span>
-                </div>
-            </div>
-            <div style="text-align: center; padding: 20px; background: #d4edda; border-radius: 12px; margin-top: 20px;">
-                <h3 style="color: #27ae60;">AUTHENTICATION SUCCESSFUL!</h3>
-                <p>All three factors verified - Transaction Approved</p>
-                <p style="font-size: 14px; color: #7f8c8d;">Security Level: 95% - 99% reduction in unauthorized access</p>
-            </div>
-        </div>
-        
-        <div class="section" style="background: linear-gradient(135deg, #2E86AB 0%, #1a5f7a 100%); color: white;">
-            <h2 class="section-title" style="color: white; border-bottom-color: rgba(255,255,255,0.3);">Business Impact</h2>
-            <div class="grid-3">
-                <div style="text-align: center;"><div style="font-size: 36px; font-weight: 700;">$15M</div><div>Annual Savings</div><div style="font-size: 12px; opacity: 0.8;">For medium-sized bank</div></div>
-                <div style="text-align: center;"><div style="font-size: 36px; font-weight: 700;">40%</div><div>Fewer False Positives</div><div style="font-size: 12px; opacity: 0.8;">Improved customer experience</div></div>
-                <div style="text-align: center;"><div style="font-size: 36px; font-weight: 700;">98.1%</div><div>Fraud Detection Rate</div><div style="font-size: 12px; opacity: 0.8;">Protecting customers</div></div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2 class="section-title">Feature Importance</h2>
-            <div style="margin: 20px 0;">
-                <div style="margin: 12px 0;"><strong>1. Transaction Amount</strong><div class="progress-bar"><div class="fill" style="width: 35%; background: #2E86AB;"></div></div><span style="font-size: 12px; color: #7f8c8d;">35% importance</span></div>
-                <div style="margin: 12px 0;"><strong>2. Distance from Merchant</strong><div class="progress-bar"><div class="fill" style="width: 25%; background: #D64933;"></div></div><span style="font-size: 12px; color: #7f8c8d;">25% importance</span></div>
-                <div style="margin: 12px 0;"><strong>3. Hour of Day</strong><div class="progress-bar"><div class="fill" style="width: 18%; background: #F5A623;"></div></div><span style="font-size: 12px; color: #7f8c8d;">18% importance</span></div>
-                <div style="margin: 12px 0;"><strong>4. Transaction Frequency</strong><div class="progress-bar"><div class="fill" style="width: 12%; background: #4CAF50;"></div></div><span style="font-size: 12px; color: #7f8c8d;">12% importance</span></div>
-                <div style="margin: 12px 0;"><strong>5. Time Since Last Transaction</strong><div class="progress-bar"><div class="fill" style="width: 10%; background: #9C27B0;"></div></div><span style="font-size: 12px; color: #7f8c8d;">10% importance</span></div>
-            </div>
-            <p style="font-size: 12px; color: #7f8c8d; text-align: center;">These factors most influence fraud prediction decisions</p>
-        </div>
-        
-        <div class="footer">
-            <p>Secure Vision AI - Building Trust in Digital Finance</p>
-            <p>QBS 3MTT NEXTGEN - July 11, 2026</p>
-        </div>
+
+<div class="container">
+
+    <div class="stepper">
+        <div class="step" id="step1">1. Card Authentication</div>
+        <div class="step" id="step2">2. Identity 3FA</div>
+        <div class="step" id="step3">3. Risk Analysis Terminal</div>
     </div>
-    
-    <script>
-        document.getElementById('hour').addEventListener('input', function() {
-            document.getElementById('hourDisplay').textContent = this.value + ':00';
-        });
-        
-        function predictFraud() {
-            const amount = parseFloat(document.getElementById('amount').value);
-            const hour = parseInt(document.getElementById('hour').value);
-            const day = document.getElementById('day').value;
-            const category = document.getElementById('category').value;
-            const state = document.getElementById('state').value;
-            const distance = parseFloat(document.getElementById('distance').value);
-            
-            let xgbScore = 0;
-            if (amount > 1000) xgbScore += 0.3;
-            if (hour < 6 || hour > 22) xgbScore += 0.2;
-            if (distance > 100) xgbScore += 0.2;
-            if (category === 'gas_transport') xgbScore += 0.15;
-            if (state === 'NY' || state === 'CA' || state === 'FL') xgbScore += 0.05;
-            xgbScore += Math.random() * 0.1;
-            xgbScore = Math.min(Math.max(xgbScore, 0.1), 0.95);
-            
-            let isoScore = 0;
-            if (amount > 2000) isoScore += 0.35;
-            if (hour < 4 || hour > 23) isoScore += 0.25;
-            if (distance > 200) isoScore += 0.2;
-            if (category === 'gas_transport') isoScore += 0.1;
-            isoScore += Math.random() * 0.1;
-            isoScore = Math.min(Math.max(isoScore, 0.05), 0.95);
-            
-            const ensembleScore = 0.6 * xgbScore + 0.4 * isoScore;
-            
-            let riskLevel, riskClass, riskEmoji, recommendation, color;
-            if (ensembleScore < 0.3) {
-                riskLevel = 'LOW';
-                riskClass = 'prediction-low';
-                riskEmoji = '✅';
-                recommendation = 'Transaction Approved';
-                color = '#27ae60';
-            } else if (ensembleScore < 0.6) {
-                riskLevel = 'MEDIUM';
-                riskClass = 'prediction-medium';
-                riskEmoji = '⚠️';
-                recommendation = 'Additional Verification Required';
-                color = '#f39c12';
-            } else {
-                riskLevel = 'HIGH';
-                riskClass = 'prediction-high';
-                riskEmoji = '🚨';
-                recommendation = 'Transaction Blocked';
-                color = '#e74c3c';
-            }
-            
-            const resultContainer = document.getElementById('resultContainer');
-            resultContainer.innerHTML = `
-                <div class="${riskClass} fade-in" style="padding: 25px; border-radius: 12px;">
-                    <div style="font-size: 72px; text-align: center;">${riskEmoji}</div>
-                    <h2 style="text-align: center; margin: 10px 0; color: ${color};">${riskLevel} RISK</h2>
-                    <p style="text-align: center; font-size: 18px;">${recommendation}</p>
-                    <div style="margin-top: 20px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                            <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
-                                <div style="font-weight: 600; color: #2E86AB;">XGBoost</div>
-                                <div style="font-size: 20px; font-weight: 700;">${Math.round(xgbScore * 100)}%</div>
-                            </div>
-                            <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
-                                <div style="font-weight: 600; color: #F5A623;">Isolation Forest</div>
-                                <div style="font-size: 20px; font-weight: 700;">${Math.round(isoScore * 100)}%</div>
-                            </div>
-                            <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
-                                <div style="font-weight: 600; color: #2E86AB;">Ensemble</div>
-                                <div style="font-size: 20px; font-weight: 700;">${Math.round(ensembleScore * 100)}%</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px;">
-                        <p style="font-weight: 600; margin: 0;">Transaction Details</p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 14px; margin-top: 10px;">
-                            <div>Amount: $${amount.toLocaleString()}</div>
-                            <div>Hour: ${hour}:00</div>
-                            <div>Day: ${day}</div>
-                            <div>Category: ${category}</div>
-                            <div>State: ${state}</div>
-                            <div>Distance: ${distance} km</div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px;">
-                        <p style="font-weight: 600; margin: 0;">Recommendation</p>
-                        <p style="font-size: 14px; margin-top: 5px;">
-                            ${recommendation}. 
-                            ${riskLevel === 'LOW' ? 'This transaction appears legitimate and can be processed normally.' : 
-                              riskLevel === 'MEDIUM' ? 'The transaction has suspicious patterns. Additional verification is recommended.' : 
-                              'The transaction is highly suspicious. Immediate blocking is recommended.'}
-                        </p>
-                    </div>
-                </div>
-            `;
+
+    <!-- STEP 1: CARD AUTHENTICATION MODULE (Idara's proactive prevention layer) -->
+    <div id="cardauth-layer" class="card">
+        <h1>💳 Card Authentication Module</h1>
+        <p style="color:#9aa0a6;">Proactive prevention layer: the card is authenticated <strong>before</strong> any transaction risk is analysed — stopping fraud at point-of-sale rather than only detecting it afterward.</p>
+        <div class="scan-box" id="scan-box">
+            <div id="scan-icon" style="font-size:2.2rem;">💳</div>
+            <p id="scan-text">Insert / tap card to begin authentication</p>
+            <button onclick="startCardAuth()" id="scan-btn">Insert Card</button>
+        </div>
+        <div class="inner-card">
+            <div class="check-row"><span>Chip data verification (simulated EMV)</span><span class="pill pill-wait" id="chk-chip">PENDING</span></div>
+            <div class="check-row"><span>Card PIN validation</span><span class="pill pill-wait" id="chk-pin">PENDING</span></div>
+            <div class="check-row"><span>Device fingerprint check</span><span class="pill pill-wait" id="chk-device">PENDING</span></div>
+        </div>
+        <br/>
+        <label>Card PIN (demo value: 4321)</label>
+        <input type="password" id="card-pin" maxlength="4" placeholder="••••">
+        <button onclick="verifyCardAuth()" id="verify-btn" disabled>Verify & Continue</button>
+    </div>
+
+    <!-- STEP 2: 3FA IDENTITY PORTAL -->
+    <div id="login-layer" class="card hidden">
+        <h1>🔐 Secure Vision Access — 3FA Identity Portal</h1>
+        <div class="grid">
+            <div class="blue-inner-card">
+                <h3>Factor 1: Knowledge</h3>
+                <label>Secure PIN</label><input type="password" id="pin" placeholder="Demo PIN: 9999" maxlength="4">
+                <div class="factor-status factor-pending" id="f1-status">Awaiting input</div>
+            </div>
+            <div class="blue-inner-card">
+                <h3>Factor 2: Possession</h3>
+                <label>Authenticator OTP</label><input type="text" id="otp" placeholder="Demo OTP: 123456" maxlength="6">
+                <div class="factor-status factor-pending" id="f2-status">Awaiting input</div>
+            </div>
+        </div>
+        <div class="blue-inner-card" style="margin-bottom:20px;">
+            <h3>Factor 3: Inherence</h3>
+            <p style="color:#8da9c4; font-size:0.85rem;">Simulated biometric fingerprint scan.</p>
+            <button class="btn-blue" onclick="scanFingerprint()" id="bio-btn">👆 Scan Fingerprint</button>
+            <div class="factor-status factor-pending" id="f3-status">Not scanned</div>
+        </div>
+        <button class="btn-blue" onclick="handleLogin()">Verify Identity & Access System</button>
+    </div>
+
+    <!-- STEP 3: FRAUD ANALYZER -->
+    <div id="analyzer-layer" class="card hidden">
+        <div id="freeze-banner" class="banner banner-frozen hidden">🔒 Card is currently FROZEN. All transactions are blocked until you unfreeze it.</div>
+        <div id="alert-banner" class="banner banner-alert hidden">🚨 High-risk transaction detected — merchant &amp; bank notified, incident logged.</div>
+
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h1>🛡️ Real-Time Credit Card Fraud Analyzer</h1>
+            <div>
+                <button class="btn-alt" onclick="toggleModal(true)">View Transaction Logs</button>
+                <button class="btn-freeze" id="freeze-toggle-btn" onclick="toggleFreeze()">❄️ Freeze Card</button>
+                <button class="btn-danger" onclick="handleLogout()">Logout / Lock Terminal</button>
+            </div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #333;" />
+
+        <h3>💳 Transaction Properties</h3>
+        <div class="grid-3">
+            <div class="inner-card">
+                <label>Amount ($)</label><input type="number" id="amt" value="50.00">
+                <label>Transaction Category</label>
+                <select id="category"></select>
+            </div>
+            <div class="inner-card">
+                <label>Gender</label>
+                <select id="gender"><option>F</option><option>M</option></select>
+                <label>City Population</label><input type="number" id="city_pop" value="3500">
+            </div>
+            <div class="inner-card">
+                <label>Transaction Time (Hour 0-23)</label>
+                <select id="txn-hour"></select>
+                <label>Merchant State</label>
+                <select id="state-select"></select>
+            </div>
+        </div>
+
+        <button onclick="evaluateRisk()" id="eval-btn">Evaluate Risk</button>
+
+        <br/><br/>
+        <h3>📊 Assessment Summary</h3>
+        <div id="summary-box">Await input evaluation...</div>
+
+        <h3 style="margin-top:25px;">📡 Live Alert Feed</h3>
+        <div class="alert-feed" id="alert-feed"><div style="color:#666;">No alerts yet.</div></div>
+
+        <div class="disclaimer">⚠️ Demo disclaimer: this browser terminal is a lightweight, rule-based approximation of the trained XGBoost + Isolation Forest ensemble's behaviour (weighted toward the model's real feature-importance ranking) — it is not a live call to the trained model.</div>
+    </div>
+</div>
+
+<div id="logs-modal" class="modal hidden">
+    <div class="modal-content">
+        <h2>User's Transaction History</h2>
+        <button onclick="downloadCSV()">Download History as CSV</button>
+        <button class="btn-alt" onclick="toggleModal(false)">Return to Dashboard</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th><th>Amount</th><th>Category</th><th>Hour</th><th>State</th>
+                    <th>Distance (km)</th><th>Gender</th><th>Pop.</th><th>Risk Prob.</th><th>Decision</th>
+                </tr>
+            </thead>
+            <tbody id="log-table-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let historyLogs = [];
+    let isAuthenticated = false;
+    let cardAuthPassed = false;
+    let cardFrozen = false;
+    let bioScanned = false;
+
+    const categories = ["misc_net", "grocery_pos", "entertainment", "gas_transport", "misc_pos", "shopping_net", "travel", "food_dining", "health_fitness"];
+
+    // Approximate state centroid coordinates (lat, long) — used to compute a genuine, state-varying
+    // cardholder-to-merchant distance instead of a frozen constant.
+    const stateCoords = {
+        AL:[32.8,-86.8],AK:[64.2,-149.4],AZ:[34.2,-111.9],AR:[34.8,-92.4],CA:[37.2,-119.7],
+        CO:[39.0,-105.5],CT:[41.6,-72.7],DE:[39.0,-75.5],FL:[28.6,-82.4],GA:[32.6,-83.4],
+        HI:[20.3,-156.4],ID:[44.2,-114.5],IL:[40.0,-89.2],IN:[39.9,-86.3],IA:[42.0,-93.5],
+        KS:[38.5,-98.0],KY:[37.5,-85.3],LA:[31.0,-92.0],ME:[45.4,-69.2],MD:[39.0,-76.7],
+        MA:[42.3,-71.8],MI:[44.3,-85.4],MN:[46.3,-94.3],MS:[32.7,-89.7],MO:[38.5,-92.5],
+        MT:[47.0,-109.6],NE:[41.5,-99.8],NV:[39.3,-116.6],NH:[43.7,-71.6],NJ:[40.1,-74.7],
+        NM:[34.5,-106.1],NY:[42.9,-75.5],NC:[35.6,-79.4],ND:[47.5,-100.5],OH:[40.4,-82.8],
+        OK:[35.5,-97.5],OR:[44.0,-120.5],PA:[40.9,-77.6],RI:[41.7,-71.5],SC:[33.9,-80.9],
+        SD:[44.4,-100.2],TN:[35.9,-86.4],TX:[31.5,-99.3],UT:[39.3,-111.7],VT:[44.0,-72.7],
+        VA:[37.5,-78.9],WA:[47.4,-120.5],WV:[38.6,-80.6],WI:[44.6,-89.9],WY:[43.0,-107.5]
+    };
+    const HOME = { lat: 40.7128, lon: -74.0060 }; // fixed cardholder home address (New York, NY)
+
+    window.onload = function() {
+        const hrSelect = document.getElementById('txn-hour');
+        for(let i=0; i<24; i++) {
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.innerHTML = i + ":00" + (i >= 12 ? " PM" : " AM");
+            hrSelect.appendChild(opt);
         }
-        
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'AUC-ROC'],
-                datasets: [
-                    { label: 'XGBoost', data: [98.5, 92.0, 95.0, 96.0, 98.0], backgroundColor: 'rgba(46, 134, 171, 0.7)', borderColor: '#2E86AB', borderWidth: 2 },
-                    { label: 'Isolation Forest', data: [95.0, 92.0, 88.0, 90.0, 95.0], backgroundColor: 'rgba(245, 166, 35, 0.7)', borderColor: '#F5A623', borderWidth: 2 },
-                    { label: 'Ensemble', data: [98.7, 93.0, 96.0, 97.0, 99.0], backgroundColor: 'rgba(214, 73, 51, 0.7)', borderColor: '#D64933', borderWidth: 2 }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'top', labels: { font: { size: 12, weight: 'bold' } } } },
-                scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score (%)' } } }
-            }
+        const catSelect = document.getElementById('category');
+        categories.forEach(c => {
+            let opt = document.createElement('option');
+            opt.value = c; opt.innerHTML = c;
+            catSelect.appendChild(opt);
         });
-        
-        setTimeout(predictFraud, 500);
-        console.log('Secure Vision AI Demo Loaded!');
-    </script>
+        const stateSelect = document.getElementById('state-select');
+        Object.keys(stateCoords).forEach(s => {
+            let opt = document.createElement('option');
+            opt.value = s; opt.innerHTML = s;
+            stateSelect.appendChild(opt);
+        });
+        setActiveStep('step1');
+    };
+
+    function setActiveStep(id) {
+        ['step1','step2','step3'].forEach(s => {
+            const el = document.getElementById(s);
+            el.classList.remove('active','done');
+        });
+        if (id === 'step1') document.getElementById('step1').classList.add('active');
+        if (id === 'step2') { document.getElementById('step1').classList.add('done'); document.getElementById('step2').classList.add('active'); }
+        if (id === 'step3') { document.getElementById('step1').classList.add('done'); document.getElementById('step2').classList.add('done'); document.getElementById('step3').classList.add('active'); }
+    }
+
+    // ---------- STEP 1: CARD AUTHENTICATION (proactive prevention layer) ----------
+    function startCardAuth() {
+        const box = document.getElementById('scan-box');
+        const icon = document.getElementById('scan-icon');
+        const text = document.getElementById('scan-text');
+        box.classList.add('scanning');
+        icon.textContent = '⏳';
+        text.textContent = 'Reading chip data & device fingerprint...';
+        document.getElementById('scan-btn').disabled = true;
+
+        setTimeout(() => {
+            document.getElementById('chk-chip').textContent = 'VERIFIED';
+            document.getElementById('chk-chip').className = 'pill pill-ok';
+            document.getElementById('chk-device').textContent = 'MATCHED';
+            document.getElementById('chk-device').className = 'pill pill-ok';
+            icon.textContent = '✅';
+            text.textContent = 'Chip & device verified. Enter card PIN to finish.';
+            box.classList.remove('scanning'); box.classList.add('ok');
+            document.getElementById('verify-btn').disabled = false;
+        }, 1200);
+    }
+
+    function verifyCardAuth() {
+        const pin = document.getElementById('card-pin').value;
+        const pinEl = document.getElementById('chk-pin');
+        if (pin === '4321') {
+            pinEl.textContent = 'VERIFIED'; pinEl.className = 'pill pill-ok';
+            cardAuthPassed = true;
+            document.getElementById('cardauth-layer').classList.add('hidden');
+            document.getElementById('login-layer').classList.remove('hidden');
+            setActiveStep('step2');
+        } else {
+            pinEl.textContent = 'FAILED'; pinEl.className = 'pill pill-fail';
+            alert('Card PIN incorrect. Card authentication failed — transaction pathway blocked.');
+        }
+    }
+
+    // ---------- STEP 2: 3FA IDENTITY ----------
+    function scanFingerprint() {
+        document.getElementById('f3-status').textContent = 'Scanning...';
+        document.getElementById('bio-btn').disabled = true;
+        setTimeout(() => {
+            bioScanned = true;
+            const el = document.getElementById('f3-status');
+            el.textContent = '✅ Fingerprint matched';
+            el.className = 'factor-status factor-ok';
+            document.getElementById('bio-btn').disabled = false;
+        }, 900);
+    }
+
+    function handleLogin() {
+        if (!cardAuthPassed) { alert('Card must be authenticated first.'); return; }
+        const pin = document.getElementById('pin').value;
+        const otp = document.getElementById('otp').value;
+
+        const f1 = document.getElementById('f1-status');
+        const f2 = document.getElementById('f2-status');
+        const pinOk = pin === '9999';
+        const otpOk = otp === '123456';
+
+        f1.textContent = pinOk ? '✅ Knowledge verified' : '❌ Incorrect PIN';
+        f1.className = 'factor-status ' + (pinOk ? 'factor-ok' : 'factor-fail');
+        f2.textContent = otpOk ? '✅ Possession verified' : '❌ Incorrect OTP';
+        f2.className = 'factor-status ' + (otpOk ? 'factor-ok' : 'factor-fail');
+
+        if (pinOk && otpOk && bioScanned) {
+            isAuthenticated = true;
+            document.getElementById('login-layer').classList.add('hidden');
+            document.getElementById('analyzer-layer').classList.remove('hidden');
+            setActiveStep('step3');
+        } else if (!bioScanned) {
+            alert('Complete the fingerprint scan (Factor 3: Inherence) to finish 3FA.');
+        } else {
+            alert('3FA failed — one or more factors did not verify.');
+        }
+    }
+
+    function handleLogout() {
+        isAuthenticated = false; cardAuthPassed = false; bioScanned = false; cardFrozen = false;
+        document.getElementById('card-pin').value = '';
+        document.getElementById('pin').value = '';
+        document.getElementById('otp').value = '';
+        ['chk-chip','chk-pin','chk-device'].forEach(id => { const e=document.getElementById(id); e.textContent='PENDING'; e.className='pill pill-wait'; });
+        document.getElementById('scan-box').className = 'scan-box';
+        document.getElementById('scan-icon').textContent = '💳';
+        document.getElementById('scan-text').textContent = 'Insert / tap card to begin authentication';
+        document.getElementById('scan-btn').disabled = false;
+        document.getElementById('verify-btn').disabled = true;
+        ['f1-status','f2-status','f3-status'].forEach(id => { const e=document.getElementById(id); e.textContent = id==='f3-status' ? 'Not scanned' : 'Awaiting input'; e.className='factor-status factor-pending'; });
+
+        document.getElementById('summary-box').innerHTML = "Await input evaluation...";
+        document.getElementById('summary-box').style.color = '#e0e0e0';
+        document.getElementById('summary-box').style.borderLeftColor = '#555';
+        document.getElementById('freeze-banner').classList.add('hidden');
+        document.getElementById('alert-banner').classList.add('hidden');
+
+        document.getElementById('analyzer-layer').classList.add('hidden');
+        document.getElementById('login-layer').classList.add('hidden');
+        document.getElementById('cardauth-layer').classList.remove('hidden');
+        setActiveStep('step1');
+    }
+
+    function toggleModal(show) {
+        document.getElementById('logs-modal').classList.toggle('hidden', !show);
+    }
+
+    // ---------- Dr. Roseline's recommendation: instant card-freeze ----------
+    function toggleFreeze() {
+        cardFrozen = !cardFrozen;
+        const banner = document.getElementById('freeze-banner');
+        const btn = document.getElementById('freeze-toggle-btn');
+        const evalBtn = document.getElementById('eval-btn');
+        if (cardFrozen) {
+            banner.classList.remove('hidden');
+            btn.textContent = '🔓 Unfreeze Card';
+            btn.className = 'btn-unfreeze';
+            evalBtn.disabled = true;
+            logAlert('Card instantly frozen by cardholder. All transactions blocked.');
+        } else {
+            banner.classList.add('hidden');
+            btn.textContent = '❄️ Freeze Card';
+            btn.className = 'btn-freeze';
+            evalBtn.disabled = false;
+            logAlert('Card unfrozen. Transactions re-enabled.');
+        }
+    }
+
+    function logAlert(msg) {
+        const feed = document.getElementById('alert-feed');
+        if (feed.children.length === 1 && feed.children[0].style.color === 'rgb(102, 102, 102)') feed.innerHTML = '';
+        const div = document.createElement('div');
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        feed.prepend(div);
+    }
+
+    // Short audible alert tone using the Web Audio API (software beep — no external files)
+    function playBeep() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.value = 880;
+            gain.gain.value = 0.05;
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start();
+            setTimeout(() => { osc.stop(); ctx.close(); }, 250);
+        } catch(e) { /* audio not available in this environment */ }
+    }
+
+    function haversineKM(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2-lat1) * Math.PI/180, dLon = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    // ---------- STEP 3: RISK ANALYSIS + DECISION ENGINE ----------
+    function evaluateRisk() {
+        if (cardFrozen) { alert('Card is frozen — unfreeze it before evaluating transactions.'); return; }
+
+        const amt = parseFloat(document.getElementById('amt').value);
+        const selectedHour = parseInt(document.getElementById('txn-hour').value);
+        const selectedState = document.getElementById('state-select').value;
+        const cat = document.getElementById('category').value;
+        const gender = document.getElementById('gender').value;
+        const cityPop = parseFloat(document.getElementById('city_pop').value) || 0;
+
+        const [mlat, mlong] = stateCoords[selectedState];
+        const distanceKM = haversineKM(HOME.lat, HOME.lon, mlat, mlong);
+
+        // Weights approximate the trained ensemble's real feature-importance ranking
+        // (see Fig. 7.7): amount-related features dominate; category/hour matter; gender,
+        // state and population contribute small but genuine effects rather than being inert.
+        let prob = 0.01;
+        if (amt > 250) prob += 0.40;
+        else if (amt > 100) prob += 0.10;
+        if (selectedHour >= 23 || selectedHour <= 4) prob += 0.25;
+        if (cat === "shopping_net" || cat === "travel") prob += 0.15;
+        if (distanceKM > 800) prob += 0.10;
+        else if (distanceKM > 300) prob += 0.05;
+
+        // Small, genuine (not dominant) contributions — matches ~0.2-0.3% real feature importance
+        if (gender === 'M') prob += 0.006;
+        if (cityPop < 5000) prob += 0.008;
+        else if (cityPop > 500000) prob -= 0.004;
+
+        prob = Math.max(0, Math.min(prob, 0.99));
+        const isFraud = prob > 0.45;
+
+        // ---- Decision engine: Card Auth check (already passed to reach here) + Fraud check ----
+        const box = document.getElementById('summary-box');
+        const contributors = [];
+        if (amt > 250) contributors.push('high amount');
+        else if (amt > 100) contributors.push('moderate amount');
+        if (selectedHour >= 23 || selectedHour <= 4) contributors.push('off-peak hour');
+        if (cat === "shopping_net" || cat === "travel") contributors.push('higher-risk category');
+        if (distanceKM > 300) contributors.push('large cardholder-merchant distance');
+        if (gender === 'M') contributors.push('gender (minor weight)');
+        if (cityPop < 5000) contributors.push('low city population (minor weight)');
+        const contribText = contributors.length ? contributors.join(', ') : 'no significant risk factors';
+
+        if (isFraud) {
+            box.innerHTML = `🚨 ALERT: Suspicious Transaction! (Fraud Probability: ${(prob*100).toFixed(2)}%)
+                <div id="contrib-line">Contributing factors: ${contribText}. Distance: ${distanceKM.toFixed(0)} km to ${selectedState}.</div>`;
+            box.style.color = '#ff4d4d';
+            box.style.borderLeftColor = '#ff4d4d';
+            document.getElementById('alert-banner').classList.remove('hidden');
+            playBeep();
+            logAlert(`Merchant & bank notified — suspicious $${amt} transaction in ${cat} (${selectedState}), risk ${(prob*100).toFixed(1)}%.`);
+            setTimeout(() => document.getElementById('alert-banner').classList.add('hidden'), 4000);
+        } else {
+            box.innerHTML = `✅ SAFE: Verified. (Fraud Probability: ${(prob*100).toFixed(2)}%)
+                <div id="contrib-line">Contributing factors: ${contribText}. Distance: ${distanceKM.toFixed(0)} km to ${selectedState}.</div>`;
+            box.style.color = '#4caf50';
+            box.style.borderLeftColor = '#4caf50';
+        }
+
+        const log = {
+            time: new Date().toLocaleString(), amt: amt, cat: cat, hour: selectedHour + ":00",
+            state: selectedState, dist: distanceKM.toFixed(0) + " km", gender: gender, pop: cityPop,
+            prob: `${(prob*100).toFixed(2)}%`, status: isFraud ? "BLOCKED (SUSPICIOUS)" : "APPROVED"
+        };
+        historyLogs.push(log);
+        updateLogTable();
+    }
+
+    function updateLogTable() {
+        const body = document.getElementById('log-table-body');
+        body.innerHTML = historyLogs.map(l => `<tr><td>${l.time}</td><td>$${l.amt}</td><td>${l.cat}</td><td>${l.hour}</td><td>${l.state}</td><td>${l.dist}</td><td>${l.gender}</td><td>${l.pop}</td><td>${l.prob}</td><td>${l.status}</td></tr>`).join('');
+    }
+
+    function downloadCSV() {
+        if(!historyLogs.length) return alert('No history data to export.');
+        let csv = 'Timestamp,Amount,Category,Hour,State,Distance_KM,Gender,CityPop,Risk Probability,Decision\n' +
+                  historyLogs.map(l => `"${l.time}",${l.amt},"${l.cat}","${l.hour}","${l.state}","${l.dist}","${l.gender}",${l.pop},"${l.prob}","${l.status}"`).join('\n');
+        let blob = new Blob([csv], { type: 'text/csv' });
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'fraud_audit_trail.csv';
+        a.click();
+    }
+</script>
 </body>
 </html>
